@@ -5,6 +5,26 @@ $user="root";
 $password="";
 $databse="todo";
 $con=mysqli_connect($server,$user,$password,$databse);
+$mes=0;
+if(isset($_GET['delete'])){
+ 
+  $sn=$_GET['delete'];
+  $q="delete from `todo` where `sno.`=".$sn;
+
+  $del=mysqli_query($con,$q);
+
+ 
+  if($del){
+    echo "<div class='alert alert-success alert-dismissible fade show' role='alert'>
+  <strong>Successful</strong> Data Deleted 
+  <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
+    <span aria-hidden='true'>&times;</span>
+  </button>
+</div>";
+  }
+
+}
+
 ?>
 
 <!doctype html>
@@ -22,27 +42,9 @@ $con=mysqli_connect($server,$user,$password,$databse);
     <title>Work Pad</title>
   </head>
   <body>
-  <!-- Edit Modal -->
 
-<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="editModalLabel">Modal title</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        ...
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Save changes</button>
-      </div>
-    </div>
-  </div>
-</div>
+  
+
 
   <!-- NAV BAR -->
   <nav class="navbar navbar-expand-lg  navbar navbar-light" style="background-color: #e3f2fd;">
@@ -83,7 +85,7 @@ $con=mysqli_connect($server,$user,$password,$databse);
     <label for="description">DESCRIPTION</label>
     <textarea class="form-control" id="description" name ="description" rows="3"></textarea>
   </div>
-  <button type="submit" class="btn btn-primary">Submit</button>
+  <button type="submit" class="btn btn-primary" name="add">Submit</button>
 </form>
 </div>
 
@@ -100,8 +102,34 @@ $con=mysqli_connect($server,$user,$password,$databse);
     </tr>
   </thead>
   <?php
+  //edit
+
+  if(isset($_POST['edit'])){
+    $sno=$_POST['edit'];
+    $n=$_POST['note'];
+    $d=$_POST['desc'];
+    $q="update todo set notes='$n', description='$d' where `sno.`=$sno";
+    $run=mysqli_query($con,$q);
+    // echo mysqli_error($con)."Query:".$q;
+    if(!$run){
+      echo "error is".mysqli_error($con);
+  }
+  else{
+      echo "<div class='alert alert-success alert-dismissible fade show' role='alert'>
+      <strong>Successful</strong> Data Edited In Form
+      <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
+        <span aria-hidden='true'>&times;</span>
+      </button>
+    </div>";
+   }
+   
+  }
+
+
+
+
 //   Insertion 
-  if($_SERVER['REQUEST_METHOD']=="POST"){
+  if(isset($_POST['add'])){
       $noteP=$_POST['notes'];
       $descriptionP=$_POST['description'];
       $sql="INSERT INTO `todo`(`notes`,`description`) VALUES ('$noteP','$descriptionP')";
@@ -126,18 +154,64 @@ $con=mysqli_connect($server,$user,$password,$databse);
         $sno=0;
         while($row=mysqli_fetch_assoc($run2)){
             $sno=$sno+1;
+            $snoo=$row['sno.'];
           echo"  <tr>
             <th scope='row'>".$sno."</th>
             <td>".$row['notes']."</</td>
             <td>".$row['description']."</</td>
-            <td><button type='button' class='edit btn btn-success'>Edit</button>
-            <button type='button' class='delete btn btn-danger'>Delete</button></td>
+            <td><a href='?delete=$snoo' class='edit btn  btn-success'>Delete</a>
+            <button type='button' class='delete btn btn-warning' data-toggle='modal' data-target='#edit$snoo'>edit</button></td>
             
             
           </tr>";
+
         }?>
   
 </table>
+<?php
+ $sql1="SELECT * FROM `todo` ";
+ $run2=mysqli_query($con,$sql1);
+
+   $sno=0;
+   while($row=mysqli_fetch_assoc($run2)){
+       $sno=$sno+1;
+       $snoo=$row['sno.'];
+       ?>
+<div class="modal fade" id="edit<?php echo $snoo ?>" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+    <form action="#" method=POST>
+      <div class="modal-header">
+        <h5 class="modal-title" id="editModalLabel">Modal title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      
+    <div class="form-group">
+      <label for="email">Note:</label>
+      <input type="text" class="form-control" id="email" value="<?php echo $row['notes'] ?>" name="note">
+    </div>
+    <div class="form-group">
+      <label for="pwd">Description:</label>
+      <input type="text" class="form-control" id="pwd" value="<?php echo $row['description'] ?>" name="desc">
+    </div>
+    <input type="hidden" value="<?php echo $snoo; ?>" name="edit">
+   
+  
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary">Save changes</button>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
+<?php
+}
+?>
 
 </div>
 
